@@ -1,21 +1,21 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin\ACL;
 
+use App\Http\Requests\StoreUpdateRole;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreUpdateCategory;
-use App\Models\Category;
+use App\Models\Role;
 use Illuminate\Http\Request;
 
-class CategoryController extends Controller
+class RoleController extends Controller
 {
-    private $repository;
+    protected $repository;
 
-    public function __construct(Category $category)
+    public function __construct(Role $role)
     {
-        $this->repository = $category;
+        $this->repository = $role;
 
-        $this->middleware(['can:categories']);
+        $this->middleware(['can:roles']);
     }
 
     /**
@@ -25,9 +25,9 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = $this->repository->latest()->paginate();
+        $roles = $this->repository->paginate();
 
-        return view('admin.pages.categories.index', compact('categories'));
+        return view('admin.pages.roles.index', compact('roles'));
     }
 
     /**
@@ -37,20 +37,20 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        return view('admin.pages.categories.create');
+        return view('admin.pages.roles.create');
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StoreUpdateCategory  $request
+     * @param  \App\Http\Requests\StoreUpdateRole  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreUpdateCategory $request)
+    public function store(StoreUpdateRole $request)
     {
         $this->repository->create($request->all());
 
-        return redirect()->route('categories.index');
+        return redirect()->route('roles.index');
     }
 
     /**
@@ -61,11 +61,11 @@ class CategoryController extends Controller
      */
     public function show($id)
     {
-        if (!$category = $this->repository->find($id)) {
+        if (!$role = $this->repository->find($id)) {
             return redirect()->back();
         }
 
-        return view('admin.pages.categories.show', compact('category'));
+        return view('admin.pages.roles.show', compact('role'));
     }
 
     /**
@@ -76,31 +76,29 @@ class CategoryController extends Controller
      */
     public function edit($id)
     {
-        if (!$category = $this->repository->find($id)) {
+        if (!$role = $this->repository->find($id)) {
             return redirect()->back();
         }
 
-        return view('admin.pages.categories.edit', compact('category'));
+        return view('admin.pages.roles.edit', compact('role'));
     }
 
-
     /**
-     * Update register by id
+     * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\StoreUpdateCategory  $request
+     * @param  \App\Http\Requests\StoreUpdateRole  $request
      * @param  int  $id
-     *
      * @return \Illuminate\Http\Response
      */
-    public function update(StoreUpdateCategory $request, $id)
+    public function update(StoreUpdateRole $request, $id)
     {
-        if (!$category = $this->repository->find($id)) {
+        if (!$role = $this->repository->find($id)) {
             return redirect()->back();
         }
 
-        $category->update($request->all());
+        $role->update($request->all());
 
-        return redirect()->route('categories.index');
+        return redirect()->route('roles.index');
     }
 
     /**
@@ -111,15 +109,14 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
-        if (!$category = $this->repository->find($id)) {
+        if (!$role = $this->repository->find($id)) {
             return redirect()->back();
         }
 
-        $category->delete();
+        $role->delete();
 
-        return redirect()->route('categories.index');
+        return redirect()->route('roles.index');
     }
-
 
     /**
      * Search results
@@ -131,16 +128,15 @@ class CategoryController extends Controller
     {
         $filters = $request->only('filter');
 
-        $categories = $this->repository
+        $roles = $this->repository
                             ->where(function($query) use ($request) {
                                 if ($request->filter) {
+                                    $query->where('name', $request->filter);
                                     $query->orWhere('description', 'LIKE', "%{$request->filter}%");
-                                    $query->orWhere('name', $request->filter);
                                 }
                             })
-                            ->latest()
                             ->paginate();
 
-        return view('admin.pages.categories.index', compact('categories', 'filters'));
+        return view('admin.pages.roles.index', compact('roles', 'filters'));
     }
 }

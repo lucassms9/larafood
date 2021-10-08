@@ -3,19 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreUpdateCategory;
-use App\Models\Category;
+use App\Http\Requests\StoreUpdateTenant;
+use App\Models\Tenant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
-class CategoryController extends Controller
+class TenantController extends Controller
 {
     private $repository;
 
-    public function __construct(Category $category)
+    public function __construct(Tenant $tenant)
     {
-        $this->repository = $category;
+        $this->repository = $tenant;
 
-        $this->middleware(['can:categories']);
+        $this->middleware(['can:tenants']);
     }
 
     /**
@@ -25,9 +26,9 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = $this->repository->latest()->paginate();
+        $tenants = $this->repository->latest()->paginate();
 
-        return view('admin.pages.categories.index', compact('categories'));
+        return view('admin.pages.tenants.index', compact('tenants'));
     }
 
     /**
@@ -37,20 +38,20 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        return view('admin.pages.categories.create');
+        return view('admin.pages.tenants.create');
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StoreUpdateCategory  $request
+     * @param  \App\Http\Requests\StoreUpdateTenant  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreUpdateCategory $request)
+    public function store(StoreUpdateTenant $request)
     {
         $this->repository->create($request->all());
 
-        return redirect()->route('categories.index');
+        return redirect()->route('tenants.index');
     }
 
     /**
@@ -61,11 +62,11 @@ class CategoryController extends Controller
      */
     public function show($id)
     {
-        if (!$category = $this->repository->find($id)) {
+        if (!$tenant = $this->repository->with('plan')->find($id)) {
             return redirect()->back();
         }
 
-        return view('admin.pages.categories.show', compact('category'));
+        return view('admin.pages.tenants.show', compact('tenant'));
     }
 
     /**
@@ -76,31 +77,42 @@ class CategoryController extends Controller
      */
     public function edit($id)
     {
-        if (!$category = $this->repository->find($id)) {
+        if (!$tenant = $this->repository->find($id)) {
             return redirect()->back();
         }
 
-        return view('admin.pages.categories.edit', compact('category'));
+        return view('admin.pages.tenants.edit', compact('tenant'));
     }
 
 
     /**
      * Update register by id
      *
-     * @param  \App\Http\Requests\StoreUpdateCategory  $request
+     * @param  \App\Http\Requests\StoreUpdateTenant  $request
      * @param  int  $id
      *
      * @return \Illuminate\Http\Response
      */
-    public function update(StoreUpdateCategory $request, $id)
+    public function update(StoreUpdateTenant $request, $id)
     {
-        if (!$category = $this->repository->find($id)) {
+        if (!$tenant = $this->repository->find($id)) {
             return redirect()->back();
         }
 
-        $category->update($request->all());
+        $data = $request->all();
 
-        return redirect()->route('categories.index');
+        if ($request->hasFile('logo') && $request->logo->isValid()) {
+
+            if (Storage::exists($tenant->logo)) {
+                Storage::delete($tenant->logo);
+            }
+
+            $data['logo'] = $request->logo->store("tenants/{$tenant->uuid}");
+        }
+
+        $tenant->update($data);
+
+        return redirect()->route('tenants.index');
     }
 
     /**
@@ -111,13 +123,17 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
-        if (!$category = $this->repository->find($id)) {
+        if (!$tenant = $this->repository->find($id)) {
             return redirect()->back();
         }
 
-        $category->delete();
+        if (Storage::exists($tenant->logo)) {
+            Storage::delete($tenant->logo);
+        }
 
-        return redirect()->route('categories.index');
+        $tenant->delete();
+
+        return redirect()->route('tenants.index');
     }
 
 
@@ -131,16 +147,15 @@ class CategoryController extends Controller
     {
         $filters = $request->only('filter');
 
-        $categories = $this->repository
+        $tenants = $this->repository
                             ->where(function($query) use ($request) {
                                 if ($request->filter) {
-                                    $query->orWhere('description', 'LIKE', "%{$request->filter}%");
-                                    $query->orWhere('name', $request->filter);
+                                    $query->where('name', $request->filter);
                                 }
                             })
                             ->latest()
                             ->paginate();
 
-        return view('admin.pages.categories.index', compact('categories', 'filters'));
+        return view('admin.pages.tenants.index', compact('tenants', 'filters'));
     }
 }
