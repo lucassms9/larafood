@@ -131,7 +131,7 @@ Route::prefix('admin')
         /**
          * Home Dashboard
          */
-        Route::get('/', 'DashboardController@home')->name('admin.index');
+        Route::get('/', 'PlanController@index')->name('admin.index');
     });
 
 

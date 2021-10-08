@@ -243,6 +243,18 @@ return [
             'icon' => 'fas fa-lock',
             // 'can'  =>  'permissions',
         ],
+        [
+            'text' => 'Usuários',
+            'url'  => 'admin/users',
+            'icon' => 'fas fa-users',
+            // 'can'  =>  'permissions',
+        ],
+        [
+            'text' => 'Categorias',
+            'url'  => 'admin/categories',
+            'icon' => 'fas fa-layer-group',
+            // 'can'  =>  'permissions',
+        ],
     ],
 
     /*
