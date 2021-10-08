@@ -255,6 +255,23 @@ return [
             'icon' => 'fas fa-layer-group',
             // 'can'  =>  'permissions',
         ],
+        [
+            'text' => 'Produtos',
+            'url'  => 'admin/products',
+            'icon' => 'fas fa-hamburger',
+            // 'can'  =>  'products',
+        ],
+        [
+            'text' => 'Mesas',
+            'url'  => 'admin/tables',
+            'icon' => 'fas fa-tablet',
+            // 'can'  =>  'tables',
+        ],
+        [
+            'text' => 'Pedidos',
+            'url'  => 'admin/orders',
+            'icon' => 'fas fa-utensils',
+        ],
     ],
 
     /*
