@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Plan;
+use App\Repositories\Contracts\TenantRepositoryInterface;
 // use App\Repositories\Contracts\TenantRepositoryInterface;
 use Illuminate\Support\Str;
 
@@ -11,10 +12,10 @@ class TenantService
     private $plan, $data = [];
     private $repository;
 
-    // public function __construct($repository)
-    // {
-    //     $this->repository = $repository;
-    // }
+    public function __construct(TenantRepositoryInterface $repository)
+    {
+        $this->repository = $repository;
+    }
 
     public function getAllTenants(int $per_page)
     {
